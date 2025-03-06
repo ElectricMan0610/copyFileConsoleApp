@@ -3,35 +3,35 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <functional>
 
 using namespace std;
 
 // Lớp FileCopier: Đóng gói các thao tác sao chép file.
-// Nhiệm vụ: Mở file nguồn và file đích, sau đó sao chép dữ liệu theo từng khối.
+// Có 2 phương thức copy:
+// - copyFile() : copy đơn luồng.
+// - copyFileMultiThreaded() : copy đa luồng với progress callback.
 class FileCopier {
 private:
     // Đường dẫn file nguồn.
     string source;
     // Đường dẫn file đích.
     string destination;
-    // Kích thước của buffer dùng để đọc dữ liệu theo từng khối (4096 byte).
+    // Kích thước của buffer dùng để sao chép (4096 byte).
     static const size_t BUFFER_SIZE = 4096;
 
-    // Phương thức copyProgress: Thực hiện sao chép dữ liệu từ file nguồn sang file đích theo từng khối.
-    // Tham số:
-    //   inFile: đối tượng ifstream đã mở file nguồn ở chế độ nhị phân.
-    //   outFile: đối tượng ofstream đã mở file đích ở chế độ nhị phân.
-    // Trả về: true nếu sao chép thành công, false nếu có lỗi.
+    // Phương thức copyProgress: sao chép dữ liệu từ inFile sang outFile theo từng khối.
     bool copyProgress(ifstream& inFile, ofstream& outFile);
 
 public:
-    // Constructor: Khởi tạo đối tượng FileCopier với đường dẫn file nguồn và file đích.
+    // Constructor: khởi tạo với đường dẫn file nguồn và đích.
     FileCopier(const string& src, const string& dest);
 
-    // Phương thức copyFile: Mở file nguồn, file đích và sao chép dữ liệu.
-    // Trả về: true nếu sao chép thành công, false nếu có lỗi.
+    // Sao chép file đơn luồng.
     bool copyFile();
+
+    // Sao chép file đa luồng với progress callback.
+    // progressCallback: hàm callback nhận tham số progress (0 đến 100).
+    // numThreads: số luồng sử dụng để copy.
+    bool copyFileMultiThreaded(function<void(double)> progressCallback, int numThreads = 4);
 };
-
-
-
