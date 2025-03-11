@@ -29,31 +29,38 @@ void CopyProcess::run() {
     atomic<bool> keepUpdating(true);
 
     // Thread cập nhật progress display cho tất cả các job.
-    thread progressDisplayThread([&]() {
-        while (keepUpdating.load()) {
-            {
+    thread progressDisplayThread([&]() 
+    {
+        while (keepUpdating.load()) 
+        {
                 lock_guard<mutex> lock(progressMutex);
-                if (!progressList.empty()) {
+                if (!progressList.empty()) 
+                {
                     // Nếu số lượng job tăng, resize vector lastPrinted
-                    if (lastPrinted.size() < progressList.size()) {
+                    if (lastPrinted.size() < progressList.size()) 
+                    {
                         lastPrinted.resize(progressList.size(), -1);
                     }
                     bool updateNeeded = false;
                     // Kiểm tra xem có job nào có tiến độ thay đổi không.
-                    for (size_t i = 0; i < progressList.size(); i++) {
+                    for (size_t i = 0; i < progressList.size(); i++) 
+                    {
                         int currentProgress = static_cast<int>(progressList[i]);
-                        if (currentProgress != lastPrinted[i]) {
+                        if (currentProgress != lastPrinted[i]) 
+                        {
                             updateNeeded = true;
                             lastPrinted[i] = currentProgress;
                         }
                     }
-                    if (updateNeeded) {
+                    if (updateNeeded) 
+                    {
                         // Lưu vị trí con trỏ hiện tại (vùng nhập).
                         cout << "\033[s";
                         // Di chuyển con trỏ lên số dòng tương ứng với số job.
                         cout << "\033[" << progressList.size() << "A";
                         // Cập nhật từng dòng progress cho mỗi job.
-                        for (size_t i = 0; i < progressList.size(); i++) {
+                        for (size_t i = 0; i < progressList.size(); i++) 
+                        {
                             // "\r\033[K" xoá toàn bộ dòng hiện tại.
                             cout << "\r\033[K"
                                 << jobDescriptions[i] << " Progress: "
@@ -62,17 +69,18 @@ void CopyProcess::run() {
                         // Khôi phục con trỏ ban đầu.
                         cout << "\033[u" << flush;
                     }
-                }
-            }
-            this_thread::sleep_for(chrono::milliseconds(100));
+                }            
+                this_thread::sleep_for(chrono::milliseconds(100));
         }
-        });
+    });
 
     // Mutex để bảo vệ thông báo không thuộc progress display.
     mutex outputMutex;
 
     // Vòng lặp nhận lệnh copy từ người dùng.
-    while (true) {
+    while (true) 
+    
+    {
         // In thêm một dòng trống để tách vùng progress và prompt.
         view->displayMessage("");
         // Hiển thị prompt ở dòng mới.
@@ -80,19 +88,22 @@ void CopyProcess::run() {
         string line = view->getInput();
 
         // Nếu nhập rỗng, in dòng trống và tiếp tục.
-        if (line.empty()) {
+        if (line.empty()) 
+        {
             view->displayMessage("");
             continue;
         }
         // Nếu nhập "exit", thoát vòng lặp.
-        if (line == "exit") {
+        if (line == "exit") 
+        {
             break;
         }
         // Phân tích cú pháp lệnh.
         istringstream iss(line);
         string command, src, dest;
         iss >> command >> src >> dest;
-        if (command != "copy" || src.empty() || dest.empty()) {
+        if (command != "copy" || src.empty() || dest.empty()) 
+        {
             view->displayMessage("Invalid command. Please enter the following format:");
             view->displayMessage("  copy <source_file> <destination_file>");
             continue;
@@ -115,7 +126,7 @@ void CopyProcess::run() {
                 lock_guard<mutex> lock(progressMutex);
                 progressList[jobIndex] = progress;
                 };
-            bool result = copier.copyFileMultiThreaded(progressCallback, 4);
+            bool result = copier.copyFileMultiThreaded(progressCallback);
             {
                 lock_guard<mutex> lock(progressMutex);
                 progressList[jobIndex] = 100.0;
@@ -123,10 +134,12 @@ void CopyProcess::run() {
             // Sau khi job copy kết thúc, in thông báo hoàn thành.
             {
                 lock_guard<mutex> lock(outputMutex);
-                if (result) {
+                if (result) 
+                {
                     view->displayMessage("Job (" + src + " -> " + dest + ") completed successfully.");
                 }
-                else {
+                else 
+                {
                     view->displayMessage("Job (" + src + " -> " + dest + ") failed.");
                 }
             }

@@ -33,5 +33,5 @@ public:
     // Sao chép file đa luồng với progress callback.
     // progressCallback: hàm callback nhận tham số progress (0 đến 100).
     // numThreads: số luồng sử dụng để copy.
-    bool copyFileMultiThreaded(function<void(double)> progressCallback, int numThreads = 4);
+    bool copyFileMultiThreaded(function<void(double)> progressCallback);
 };
